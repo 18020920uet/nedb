@@ -85,6 +85,7 @@ app.delete("/delete/:name", async (req, res, next) => {
 
 app.use(function (req, res, next) {
   // if (err) next();
+  if (!res.result) next();
   return res.send({
     status: "Success",
     result: res.result,
@@ -94,6 +95,10 @@ app.use(function (req, res, next) {
 
 app.use(function (err, req, res, next) {
   return res.send({ status: "Fail", message: err });
+});
+
+app.all("*", function (req, res, next) {
+  return res.send("Not found");
 });
 
 app.listen(3000, () => {
