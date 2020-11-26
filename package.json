@@ -1,0 +1,21 @@
+{
+  "name": "nedb",
+  "version": "1.0.0",
+  "description": "Bai tap hqtcsdl",
+  "main": "index.js",
+  "author": "mE",
+  "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@types/nedb": "^1.8.11",
+    "body-parse": "^0.1.0",
+    "csvtojson": "^2.0.10",
+    "express": "^4.17.1",
+    "jaguardb": "^0.1.3",
+    "mysql": "^2.18.1",
+    "nedb": "^1.8.0",
+    "nodemon": "^2.0.6"
+  }
+}
