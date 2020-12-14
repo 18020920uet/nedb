@@ -19,12 +19,10 @@ app.get("/", async (req, res, next) => {
       else resolve(docs);
     });
   });
-  res.result = result;
-  res.time = (Date.now() - startTime) / 1000;
   return res.send({
     status: 1,
-    result: res.result,
-    time: res.time,
+    result: result,
+    time: (Date.now() - start) / 1000,
   });
 });
 
@@ -37,12 +35,10 @@ app.get("/count", async (req, res, next) => {
       else resolve(n);
     });
   });
-  res.result = result;
-  res.time = (Date.now() - startTime) / 1000;
   return res.send({
     status: 1,
-    result: res.result,
-    time: res.time,
+    result: result,
+    time: (Date.now() - start) / 1000,
   });
 });
 
@@ -56,17 +52,15 @@ app.post("/create", async (req, res, next) => {
       else resolve(doc);
     });
   }).catch((err) => next(err));
-  res.result = result;
-  res.time = (Date.now() - startTime) / 1000;
   return res.send({
     status: 1,
-    result: res.result,
-    time: res.time,
+    result: result,
+    time: (Date.now() - start) / 1000,
   });
 });
 
-app.get("/find/:movieId", async (req, res, next) => {
-  const movieId = req.params.movieId;
+app.get("/findOne/:movieId", async (req, res, next) => {
+  const movieId = Number(req.params.movieId);
   const start = Date.now();
   const result = await new Promise((resolve, reject) => {
     db.findOne({ movieId: movieId }, (err, doc) => {
@@ -75,17 +69,32 @@ app.get("/find/:movieId", async (req, res, next) => {
       else resolve(doc);
     });
   }).catch((err) => next(err));
-  res.result = result;
-  res.time = (Date.now() - start) / 1000;
   return res.send({
     status: 1,
-    result: res.result,
-    time: res.time,
+    result: result,
+    time: (Date.now() - start) / 1000,
   });
 });
 
-app.get("/find", async (req, res, next) => {
-  const movieId = req.query.movieId;
+app.get("/findMany/:movieId", async (req, res, next) => {
+  const movieId = Number(req.params.movieId);
+  const start = Date.now();
+  const result = await new Promise((resolve, reject) => {
+    db.find({ movieId: movieId }, (err, doc) => {
+      if (err) reject(err);
+      if (!doc) next("Not Found");
+      else resolve(doc);
+    });
+  }).catch((err) => next(err));
+  return res.send({
+    status: 1,
+    result: result,
+    time: (Date.now() - start) / 1000,
+  });
+});
+
+app.get("/find/option", async (req, res, next) => {
+  const movieId = Number(req.params.movieId);
   const lte = Boolean(req.query.lte);
   const start = Date.now();
   const result = await new Promise((resolve, reject) => {
@@ -98,17 +107,16 @@ app.get("/find", async (req, res, next) => {
       }
     );
   }).catch((err) => next(err));
-  res.result = result;
-  res.time = (Date.now() - start) / 1000;
   return res.send({
     status: 1,
-    result: res.result,
-    time: res.time,
+    result: result,
+    time: (Date.now() - start) / 1000,
   });
 });
 
 app.put("/update/:movieId", async (req, res, next) => {
-  const movieId = req.params.movieId;
+  const movieId = Number(req.params.movieId);
+
   const update = req.body;
   const start = Date.now();
   const result = await new Promise((resolve, reject) => {
@@ -123,17 +131,40 @@ app.put("/update/:movieId", async (req, res, next) => {
       }
     );
   }).catch((err) => next(err));
-  res.result = result;
-  res.time = (Date.now() - start) / 1000;
   return res.send({
     status: 1,
-    result: res.result,
-    time: res.time,
+    result: result,
+    time: (Date.now() - start) / 1000,
+  });
+});
+
+app.put("/updateMany/:movieId", async (req, res, next) => {
+  const movieId = Number(req.params.movieId);
+
+  const update = req.body;
+  const start = Date.now();
+  const result = await new Promise((resolve, reject) => {
+    db.update(
+      { movieId: movieId },
+      { movieId: movieId, ...update },
+      { returnUpdatedDocs: true, multi: true },
+      (err, numberUpdated, upsert) => {
+        if (err) reject(err);
+        if (!upsert) next(err);
+        else resolve(upsert);
+      }
+    );
+  }).catch((err) => next(err));
+  return res.send({
+    status: 1,
+    result: result,
+    time: (Date.now() - start) / 1000,
   });
 });
 
 app.delete("/delete/:movieId", async (req, res, next) => {
-  const movieId = req.params.movieId;
+  const movieId = Number(req.params.movieId);
+
   const start = Date.now();
   const result = await new Promise((resolve, reject) => {
     db.remove({ movieId: movieId }, (err, result) => {
@@ -142,17 +173,29 @@ app.delete("/delete/:movieId", async (req, res, next) => {
       else resolve(result);
     });
   }).catch((err) => next(err));
-  res.result = result;
-  res.time = (Date.now() - start) / 1000;
   return res.send({
     status: 1,
-    result: res.result,
-    time: res.time,
+    result: result,
+    time: (Date.now() - start) / 1000,
   });
 });
 
-app.use(function (req, res, next) {
-  if (!res.result) next();
+app.delete("/deleteMany/:movieId", async (req, res, next) => {
+  const movieId = Number(req.params.movieId);
+
+  const start = Date.now();
+  const result = await new Promise((resolve, reject) => {
+    db.remove({ movieId: movieId }, { multi: true }, (err, result) => {
+      if (err) reject(err);
+      if (!result) next("Err");
+      else resolve(result);
+    });
+  }).catch((err) => next(err));
+  return res.send({
+    status: 1,
+    result: result,
+    time: (Date.now() - start) / 1000,
+  });
 });
 
 app.use(function (err, req, res, next) {
